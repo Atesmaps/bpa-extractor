@@ -21,9 +21,15 @@ import time
 import requests
 from bs4 import BeautifulSoup
 import bpa_urls
-import db_connector as db
-import constants as const
 import atesmaps_utilities as ates_utils
+
+
+########### CONFIGURATION ###########
+# Set custom date with format YYYY-MM-DD or leave blank
+# to use default.
+# Default: Today
+CUSTOM_DATE = "2021-04-25"
+ZONE_NAME = "Aran"
 
 
 def get_report(date: str=datetime.today().strftime("%Y-%m-%d")):
@@ -51,7 +57,7 @@ def get_report(date: str=datetime.today().strftime("%Y-%m-%d")):
 def danger_level_from_bpa(bpa) -> int:
     '''
     Return avalanche danger level from BPA report.
-    
+
     :param bpa: BeatifulSoup parsed HTML.
     '''
 
@@ -69,46 +75,38 @@ def danger_level_from_bpa(bpa) -> int:
         raise Exception("Couldn't get avalanche danger level from Aran BPA.") from exc
 
 
-def save_data(zone: str, date: str, level: str) -> None:
-    '''
-    Save data into database.
-    '''
-
-    # Insert dangel level to BPA table
-    print("Updating data to zones information table...")
-    q = f"UPDATE {const.TABLE_BPA} SET bpa='{level}' WHERE codi_zona = '{zone}'"
-    db.update_data(query=q)
-    
-    # Insert data into BPA history
-    print("Updating data to bpa history table...")
-    q = f"INSERT INTO {const.TABLE_BPA_HISTORY} (zona, codi_zona, date_time, perill) " \
-        f"VALUES ('Aran', '{zone}', '{datetime.now()}', '{level}')"
-    db.update_data(query=q)
-
-
 def main() -> None:
     '''Extract BPA data from Lauegi archive.'''
 
     # Init
     start_time = time.time()
+    print("** ATESMaps Avalanche Report Extractor **")
 
     # Today date in format YYYY-MM-DD
-    today = datetime.today().strftime("%Y-%m-%d")
-    today = "2021-04-30"
-    print("** ATESMaps Avalanche Report Extractor **")
+    if CUSTOM_DATE:
+        today = CUSTOM_DATE
+    else:
+        today = datetime.today().strftime("%Y-%m-%d")
+
     print(f"Updating avalanche danger level...")
-    print(f"Zone: Aran")
+    print(f"Zone: {ZONE_NAME}")
     print(f"Date: {today}")
 
     # Load zone ID for Aran
-    zone_id = ates_utils.refresh_zone_ids()["Aran"]
+    zone_id = ates_utils.refresh_zone_ids()[ZONE_NAME]
+
+    # Check if BPA for selected date already exists.
+    if ates_utils.bpa_exists(date=today, zone_id=zone_id):
+        print(f"Avalanche danger level already exists for the date '{today}' and zone '{ZONE_NAME}'")
+        print("Bye.")
+        sys.exit()
 
     # Get danger level
     report = get_report(date=today)
     danger_lvl = danger_level_from_bpa(bpa=report)
 
     # Insert data to DB
-    save_data(
+    ates_utils.save_data(
         zone=zone_id,
         date=today,
         level=danger_lvl

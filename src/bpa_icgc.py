@@ -17,17 +17,20 @@
 #
 ############################################################
 from datetime import datetime
-from hashlib import new
 import sys
 import time
 from typing import Iterable, List
 import requests
-from py_pdf_parser.loaders import load_file
 from PyPDF2 import PdfFileReader
 import bpa_urls
-import db_connector as db
-import constants as const
 import atesmaps_utilities as ates_utils
+
+
+########### CONFIGURATION ###########
+# Set custom date with format YYYY-MM-DD or leave blank
+# to use default.
+# Default: Today
+CUSTOM_DATE = "2021-02-10"
 
 
 ##### Zones managed by ICGC #####
@@ -97,20 +100,21 @@ def levels_to_numeric(danger_levels: Iterable) -> List:
     for bpa_level in danger_levels:
         # for str_level in set(AVALANCHE_LEVELS).intersection(bpa_level.split()):
         num_levels.append(AVALANCHE_LEVELS[bpa_level])
-    
+
     return num_levels
 
 
-def danger_levels_from_bpa(bpa_file) -> int:
+def danger_levels_from_bpa(bpa_file: str, date: str) -> int:
     '''
     Return avalanche danger level from BPA report for each zone.
-    
+
     :param bpa_file: PDF file path with BPA report.
+    :param date: The date that corresponds to the BPA report date.
     '''
 
     try:
         levels_from_bpa = []
-        
+
         # Parse BPA in PDF format.
         with open(bpa_file, 'rb') as f:
             reader = PdfFileReader(f)
@@ -135,6 +139,13 @@ def danger_levels_from_bpa(bpa_file) -> int:
                         zone[0] = " ".join(new_name)
                     # Get zone ID
                     zone_id = ates_utils.refresh_zone_ids()[zone[0]]
+
+                    # Check if BPA for selected date already exists.
+                    if ates_utils.bpa_exists(date=date, zone_id=zone_id):
+                        print(f"Avalanche danger level already exists for the date '{date}' and zone {zone[0]}")
+                        print("Bye.")
+                        sys.exit()
+
                     # Save values
                     print(f"Danger level for '{zone[0]}' zone: {danger_level}")
                     levels_from_bpa.append({
@@ -145,27 +156,10 @@ def danger_levels_from_bpa(bpa_file) -> int:
                     print(f"WARNING: Couldn't get avalanche danger level for '{zone}' zone.")
                 else:
                     print(f"Couldn't extract data from page '{page}' using '{bpa_file}' report.")
-        
+
         return levels_from_bpa
     except Exception as exc:
         raise Exception("Couldn't get avalanche danger level from Aran BPA.") from exc
-
-
-def save_data(zone: str, date: str, level: str) -> None:
-    '''
-    Save data into database.
-    '''
-
-    # Insert dangel level to BPA table
-    print("Updating data to zones information table...")
-    q = f"UPDATE {const.TABLE_BPA} SET bpa='{level}' WHERE codi_zona = '{zone}'"
-    db.update_data(query=q)
-    
-    # Insert data into BPA history
-    print("Updating data to bpa history table...")
-    q = f"INSERT INTO {const.TABLE_BPA_HISTORY} (zona, codi_zona, date_time, perill) " \
-        f"VALUES ('Aran', '{zone}', '{datetime.now()}', '{level}')"
-    db.update_data(query=q)
 
 
 def main() -> None:
@@ -173,23 +167,26 @@ def main() -> None:
 
     # Init
     start_time = time.time()
+    print("** ATESMaps Avalanche Report Extractor **")
 
     # Today date in format YYYY-MM-DD
-    today = datetime.today().strftime("%Y-%m-%d")
-    today = "2021-02-10"
-    print("** ATESMaps Avalanche Report Extractor **")
+    if CUSTOM_DATE:
+        today = CUSTOM_DATE
+    else:
+        today = datetime.today().strftime("%Y-%m-%d")
+
     print(f"Updating avalanche danger level...")
     print(f"Zone: ICGC - Catalunya Pyrenees")
     print(f"Date: {today}")
 
     # Get danger level
     pdf_bpa = f"/tmp/icgc_bpa_{today}.pdf"
-    # get_report(output_file=pdf_bpa, date=today)
-    danger_lvls = danger_levels_from_bpa(bpa_file=pdf_bpa)
+    get_report(output_file=pdf_bpa, date=today)
+    danger_lvls = danger_levels_from_bpa(bpa_file=pdf_bpa, date=today)
 
     # Insert data to DB
     for zone in danger_lvls:
-        save_data(
+        ates_utils.save_data(
             zone=zone["zone_id"],
             date=today,
             level=zone["level"]
