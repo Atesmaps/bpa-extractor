@@ -24,3 +24,8 @@ BPA_ARAN_URL_2 = "https://conselharan2.cyberneticos.net/albina_files_local/{date
 ##### ICGC #####
 # Date should be provided in format YYYY-MM-DD
 BPA_ICGC_URL = "https://bpa.icgc.cat/butlletigenerator/bpadoc/bpa_{date}_cat.pdf"
+
+##### METEOFRANCE #####
+# Avalanche reports URL
+BPA_METEOFRANCE_URL = "https://meteofrance.com/meteo-montagne/pyrenees/risques-avalanche"
+BPA_METEOFRANCE_HISTORY_URL = "https://donneespubliques.meteofrance.fr/?fond=produit&id_produit=265&id_rubrique=50"

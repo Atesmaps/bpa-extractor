@@ -1,10 +1,10 @@
 #!/usr/bin/python3
 ############################################################
 #
-#   ATESMaps - BPA Extractors - ICGC (Institu Cartogràfic 
+#   ATESMaps - BPA Extractors - ICGC (Institut Cartogràfic 
 #   i Geològic de Catalunya)
 #
-#   Python script that obtains data of avalanche  bulletin
+#   Python script that obtains data of avalanche bulletin
 #   generated and managed by ICGC for Catalunya Pyrenees.
 #
 #   +INFO: https://bpa.icgc.cat
@@ -30,7 +30,7 @@ import atesmaps_utilities as ates_utils
 # Set custom date with format YYYY-MM-DD or leave blank
 # to use default.
 # Default: Today
-CUSTOM_DATE = "2021-02-10"
+CUSTOM_DATE = "" # "2021-02-10"
 
 
 ##### Zones managed by ICGC #####
@@ -144,12 +144,13 @@ def danger_levels_from_bpa(bpa_file: str, date: str) -> int:
                     if ates_utils.bpa_exists(date=date, zone_id=zone_id):
                         print(f"Avalanche danger level already exists for the date '{date}' and zone {zone[0]}")
                         print("Bye.")
-                        sys.exit()
+                        continue
 
                     # Save values
                     print(f"Danger level for '{zone[0]}' zone: {danger_level}")
                     levels_from_bpa.append({
                         "zone_id": zone_id,
+                        "zone_name": zone[0],
                         "level": danger_level
                     })
                 elif zone and not danger_levels:
@@ -187,7 +188,8 @@ def main() -> None:
     # Insert data to DB
     for zone in danger_lvls:
         ates_utils.save_data(
-            zone=zone["zone_id"],
+            zone_name=zone["zone_name"],
+            zone_id=zone["zone_id"],
             date=today,
             level=zone["level"]
         )

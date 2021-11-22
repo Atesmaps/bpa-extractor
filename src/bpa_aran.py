@@ -3,7 +3,7 @@
 #
 #   ATESMaps - BPA Extractors - ARAN
 #
-#   Python script that obtains data of avalanche  bulletin
+#   Python script that obtains data of avalanche bulletin
 #   generated and managed by Lauegi & Conselh d'Aran.
 #
 #   +INFO: https://lauegi.report
@@ -28,7 +28,7 @@ import atesmaps_utilities as ates_utils
 # Set custom date with format YYYY-MM-DD or leave blank
 # to use default.
 # Default: Today
-CUSTOM_DATE = "2021-04-25"
+CUSTOM_DATE = "" # "2021-04-25"
 ZONE_NAME = "Aran"
 
 
@@ -107,7 +107,8 @@ def main() -> None:
 
     # Insert data to DB
     ates_utils.save_data(
-        zone=zone_id,
+        zone_name=ZONE_NAME,
+        zone_id=zone_id,
         date=today,
         level=danger_lvl
     )

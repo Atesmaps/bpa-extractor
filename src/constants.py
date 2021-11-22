@@ -13,4 +13,4 @@
 
 # Database table names
 TABLE_BPA = "limitszonesbpa"
-TABLE_BPA_HISTORY = "bpa_bbdd"
+TABLE_BPA_HISTORY = "bpa_history"

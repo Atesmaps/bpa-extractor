@@ -3,3 +3,4 @@ psycopg2-binary
 xmltodict
 beautifulsoup4
 pypdf
+selenium

@@ -48,27 +48,32 @@ def bpa_exists(date: str, zone_id: str) -> bool:
                 {const.TABLE_BPA_HISTORY}
             WHERE
                 bpa_date = '{date}'
-                and codi_zona = '{zone_id}'"""
+                and zone_id = '{zone_id}'"""
 
     response = db.select_data(query=q)
     if response:
         return True
-    
+
     return False
 
 
-def save_data(zone: str, date: str, level: str) -> None:
+def save_data(zone_name: str, zone_id: str, date: str, level: str) -> None:
     '''
     Save data into database.
+
+    :param zone_name: The name of the zone to save data.
+    :param zone_id: The zone code that identifies uniquely zone.
+    :param date: The BPA report date in format YYYY-MM-DD.
+    :param level: Avalanche danger level as string. Ex: 2
     '''
 
     # Insert dangel level to BPA table
     print("Updating data to zones information table...")
-    q = f"UPDATE {const.TABLE_BPA} SET bpa='{level}' WHERE codi_zona = '{zone}'"
+    q = f"UPDATE {const.TABLE_BPA} SET bpa='{level}' WHERE codi_zona = '{zone_id}'"
     db.update_data(query=q)
-    
+
     # Insert data into BPA history
     print("Updating data to bpa history table...")
-    q = f"INSERT INTO {const.TABLE_BPA_HISTORY} (zona, codi_zona, date_time, perill, bpa_date) " \
-        f"VALUES ('Aran', '{zone}', '{datetime.now()}', '{level}', '{date}')"
+    q = f"INSERT INTO {const.TABLE_BPA_HISTORY} (zone_name, zone_id, created_at, danger_level, bpa_date) " \
+        f"VALUES ('{zone_name}', '{zone_id}', '{datetime.now()}', '{level}', '{date}')"
     db.update_data(query=q)
