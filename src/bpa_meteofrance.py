@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 ###############################################################################
 #
-#   ATESMaps - BPA Extractors - MeteoFrance
+#   ATESMaps - BPA Extractors - METEOFRANCE
 #
 #   Python script that obtains data of avalanche bulletin
 #   generated and managed by MeteoFrance.
@@ -16,6 +16,7 @@
 #
 ###############################################################################
 from typing import Optional
+from os import getenv
 import sys
 import time
 import re
@@ -30,10 +31,11 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.firefox.options import Options
 
 ############ CONFIGURATION ################
-# Set custom date with format YYYY-MM-DD or leave blank
-# to use default.
+# Set custom date with format YYYY-MM-DD using
+# environment variable "CUSTOM_DATE". If it's not
+# set default date will be used.
 # Default: Today
-CUSTOM_DATE = ""
+CUSTOM_DATE = getenv("CUSTOM_DATE")
 
 # METEOFRANCE - Zone matrix positions
 METEOFRANCE_ZONE_POS = {

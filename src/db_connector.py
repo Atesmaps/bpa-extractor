@@ -38,7 +38,7 @@ def db_conn():
 
 def update_data(query: str) -> bool:
     '''
-    Do an SQL insert to database. Used for save BPA data.
+    Do an SQL insert/update to database. Used for save BPA data.
 
     :param query: String with SQL insert query with record.
     '''

@@ -1,0 +1,9 @@
+/var/log/atesmaps-bpa-extractor/*.log {
+	daily
+	missingok
+	rotate 7
+	compress
+	delaycompress
+	notifempty
+	create 0644 root root
+}

@@ -17,6 +17,7 @@
 #
 ############################################################
 from datetime import datetime
+from os import getenv
 import sys
 import time
 from typing import Iterable, List
@@ -26,12 +27,12 @@ import bpa_urls
 import atesmaps_utilities as ates_utils
 
 
-########### CONFIGURATION ###########
-# Set custom date with format YYYY-MM-DD or leave blank
-# to use default.
+############ CONFIGURATION ################
+# Set custom date with format YYYY-MM-DD using
+# environment variable "CUSTOM_DATE". If it's not
+# set default date will be used.
 # Default: Today
-CUSTOM_DATE = "" # "2021-02-10"
-
+CUSTOM_DATE = getenv("CUSTOM_DATE")
 
 ##### Zones managed by ICGC #####
 ICGC_ZONES = [
@@ -104,7 +105,7 @@ def levels_to_numeric(danger_levels: Iterable) -> List:
     return num_levels
 
 
-def danger_levels_from_bpa(bpa_file: str, date: str) -> int:
+def danger_levels_from_bpa(bpa_file: str, date: str) -> list:
     '''
     Return avalanche danger level from BPA report for each zone.
 
@@ -143,7 +144,6 @@ def danger_levels_from_bpa(bpa_file: str, date: str) -> int:
                     # Check if BPA for selected date already exists.
                     if ates_utils.bpa_exists(date=date, zone_id=zone_id):
                         print(f"Avalanche danger level already exists for the date '{date}' and zone {zone[0]}")
-                        print("Bye.")
                         continue
 
                     # Save values

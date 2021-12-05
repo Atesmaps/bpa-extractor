@@ -16,6 +16,7 @@
 #
 ############################################################
 from datetime import datetime
+from os import getenv
 import sys
 import time
 import requests
@@ -24,15 +25,16 @@ import bpa_urls
 import atesmaps_utilities as ates_utils
 
 
-########### CONFIGURATION ###########
-# Set custom date with format YYYY-MM-DD or leave blank
-# to use default.
+############ CONFIGURATION ################
+# Set custom date with format YYYY-MM-DD using
+# environment variable "CUSTOM_DATE". If it's not
+# set default date will be used.
 # Default: Today
-CUSTOM_DATE = "" # "2021-04-25"
+CUSTOM_DATE = getenv("CUSTOM_DATE")
 ZONE_NAME = "Aran"
 
 
-def get_report(date: str=datetime.today().strftime("%Y-%m-%d")):
+def get_report(date: str):
     '''
     Do an API call and return BPA data in BeatifulSoup object.
 
@@ -76,7 +78,7 @@ def danger_level_from_bpa(bpa) -> int:
 
 
 def main() -> None:
-    '''Extract BPA data from Lauegi archive.'''
+    '''Extract BPA data from Lauegi website.'''
 
     # Init
     start_time = time.time()

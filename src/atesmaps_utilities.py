@@ -14,6 +14,7 @@
 ############################################################
 from datetime import datetime
 import db_connector as db
+
 import constants as const
 
 
@@ -68,12 +69,12 @@ def save_data(zone_name: str, zone_id: str, date: str, level: str) -> None:
     '''
 
     # Insert dangel level to BPA table
-    print("Updating data to zones information table...")
-    q = f"UPDATE {const.TABLE_BPA} SET bpa='{level}' WHERE codi_zona = '{zone_id}'"
+    print(f"Updating data to zones information table for zone '{zone_name}'...")
+    q = f"UPDATE {const.TABLE_BPA} SET bpa='{level}', actualitzacio='{datetime.now()}' WHERE codi_zona = '{zone_id}'"
     db.update_data(query=q)
 
     # Insert data into BPA history
-    print("Updating data to bpa history table...")
+    print(f"Inserting new data to bpa history table for zone '{zone_name}'...")
     q = f"INSERT INTO {const.TABLE_BPA_HISTORY} (zone_name, zone_id, created_at, danger_level, bpa_date) " \
         f"VALUES ('{zone_name}', '{zone_id}', '{datetime.now()}', '{level}', '{date}')"
     db.update_data(query=q)
