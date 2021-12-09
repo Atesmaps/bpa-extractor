@@ -66,6 +66,13 @@ Follow this steps:
 6. Add the following lines to **crontab** to schedule BPA extractor job.
 > 0 * * * * /opt/atesmaps/scripts/run_bpa_extractor.sh >/dev/null 2>&1
 
+### SQL Resources
+
+Available SQL scripts for deploy BPA extractor are in `resources/SQL`.
+
+- **create_bpa_history_table.sql**: DDL for create new table for danger levels and BPA extracted data.
+- **load_history_from_bbdd.sql**: SQL script for extract old data collected in table "bpa_bbdd" and load to new table.
+
 ## Build
 
 If you have made changes to the code you will need to generate a new version. Keep in mind that [Docker engine](https://docs.docker.com/engine/install/) is required in your development environment.
