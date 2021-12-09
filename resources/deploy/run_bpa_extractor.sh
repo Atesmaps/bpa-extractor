@@ -14,7 +14,7 @@
 #########################################################
 
 # Log filename
-LOG_FILE=atesmaps_bpa_extractor_`date +%Y%m%d`.log
+LOG_FILE=/var/log/atesmaps-bpa-extractor/atesmaps_bpa_extractor.log
 
 # Set log trace
 echo -e "\n\n########### ATESMaps BPA Extractor - $(date +%Y-%m-%d) $(date +%H:%M:%S) ###########" >> ${LOG_FILE}

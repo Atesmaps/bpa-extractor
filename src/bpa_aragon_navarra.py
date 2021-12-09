@@ -6,7 +6,7 @@
 #   Python script that obtains data of avalanche bulletin
 #   generated and managed by AEMET.
 #
-#   +INFO: http://www.aemet.es/es/eltiempo/prediccion/montana/boletin_peligro_aludes
+#   +INFO: https://www.aemet.es/es/eltiempo/prediccion/montana/boletin_peligro_aludes
 #
 #   Collaborators:
 #       * Nil Torrano: <ntorrano@atesmaps.org>

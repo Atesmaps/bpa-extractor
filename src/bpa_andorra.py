@@ -4,9 +4,10 @@
 #   ATESMaps - BPA Extractors - ANDORRA
 #
 #   Python script that obtains data of avalanche bulletin
-#   generated and managed by Lauegi & Conselh d'Aran.
+#   generated and managed by Andorra National Weather
+#   Service.
 #
-#   +INFO: https://lauegi.report
+#   +INFO: http://www.meteo.ad/estatneu
 #
 #   Collaborators:
 #       * Nil Torrano: <ntorrano@atesmaps.org>
