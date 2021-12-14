@@ -176,7 +176,7 @@ def main() -> None:
                 level=zone["level"]
             )
     else:
-        print(f"BPA report for Andorra zones are not available yet for selected date '{today}'.")
+        print(f"BPA report for Aragon & Navarra zones are not available yet for selected date '{today}'.")
 
     # End
     print("Total time elapsed: {:.2f} seconds.".format(time.time() - start_time))

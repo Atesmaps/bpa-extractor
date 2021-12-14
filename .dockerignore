@@ -1,5 +1,6 @@
 # resources
-resources/
+resources/deploy
+resources/SQL
 
 # geckodriver
 geckodriver.log

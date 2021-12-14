@@ -123,7 +123,7 @@ def get_bpa_danger_levels(date: str) -> list:
                 if img_icon:
                     danger_lvls = img_icon["src"].split("/")[-1].split(".")[0]
                     # Get max level if has multiple levels
-                    danger_lvls = [int(i) for i in danger_lvls.split() if i.isdigit()]
+                    danger_lvls = [int(i) for i in danger_lvls if i.isdigit()]
                     danger_lvl = max(danger_lvls)
                     print(f"Danger level for '{ANDORRA_ZONES[zone]}' zone: {danger_lvl}")
                     levels_from_bpa.append({
