@@ -48,6 +48,7 @@ def update_data(query: str) -> bool:
         with db.cursor() as cursor:
             cursor.execute(query)
         db.commit()
+        db.close()
     except Exception as exc:
         raise Exception("An error ocurred executing SQL select statement.") from exc
 
@@ -64,7 +65,8 @@ def select_data(query: str) -> Dict:
         db = db_conn()
         with db.cursor() as cursor:
             cursor.execute(query)
-            return cursor.fetchall()
+            response = cursor.fetchall()
+            db.close()
+            return response
     except Exception as exc:
         raise Exception("An error ocurred executing SQL select statement.") from exc
-
