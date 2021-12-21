@@ -65,8 +65,9 @@ def danger_level_from_bpa(bpa) -> int:
 
     try:
         print("Processing danger level from report...")
+        danger_level = []
         for div in bpa.body.find_all("div", attrs={"class": "dangerImg"}):
-            if "conselharan2" in div.img["src"]:
+            if "conselharan2" in div.img["src"] or "warning_pictos" in div.img["src"]:
                 danger_level = div.img["src"].split("/")[-1].split(".")[0].split("_")[1:]
                 break
 
