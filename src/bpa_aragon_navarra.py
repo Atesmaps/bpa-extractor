@@ -92,7 +92,9 @@ def get_bpa_publication_date(bpa_file: str) -> str:
         with fitz.open(bpa_file) as f:
             for page in f:
                 p_text = page.get_text()
-                date_str = p_text.split("\n")[2].split(",")[1].split("de")  # Date format: 4 de diciembre de 2021
+                date_str = p_text.split("\n")[2].split(",")[1].split("de")  # Date format: lunes, 4 de diciembre de 2021 [(corrección)]
+                if "(corrección)" in date_str[2]:
+                    date_str[2] = date_str[2].replace("(corrección)", "")  # Remove text for rectification
                 date = datetime.strptime(
                     f"{date_str[0].strip()}-" \
                         f"{const.SPANISH_MONTHS_NUMERIC[date_str[1].strip()]}-" \
