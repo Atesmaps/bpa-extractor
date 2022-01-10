@@ -103,7 +103,7 @@ def get_bpa_publication_date(bpa_file: str) -> str:
                 )
                 break  # Date extracted from first page
 
-        # Return date in format yyyy/mm/dd
+        # Return date in format yyyy-mm-dd
         return date.strftime("%Y-%m-%d")
     except Exception as exc:
         raise Exception("Couldn't determine BPA report date.") from exc
@@ -149,36 +149,37 @@ def main() -> None:
     print("** ATESMaps Avalanche Report Extractor **")
 
     # Today date in format YYYY-MM-DD
-    if CUSTOM_DATE:
-        today = CUSTOM_DATE
-    else:
-        today = datetime.today().strftime("%Y-%m-%d")
+    today = datetime.today().strftime("%Y-%m-%d")
 
     print(f"Updating avalanche danger level...")
     print(f"Zone: Aragon & Navarra Pyrenees")
-    print(f"Date: {today}")
+    print(f"Current date: {today}")
 
     # Get danger level
     pdf_bpa = f"/tmp/aragon_nav_bpa_{today}.pdf"
     get_report(output_file=pdf_bpa)
-    
-    # Only compute danger level if selected date is equals than BPA report date.
-    if today == get_bpa_publication_date(bpa_file=pdf_bpa):
-        danger_lvls = danger_lvls = get_danger_levels_from_bpa(
-            bpa_file=pdf_bpa,
-            date=today
-        )
 
-        # Insert data to DB
-        for zone in danger_lvls:
-            ates_utils.save_data(
-                zone_name=zone["zone_name"],
-                zone_id=zone["zone_id"],
-                date=today,
-                level=zone["level"]
-            )
+    # BPA date in format YYYY-MM-DD
+    if CUSTOM_DATE:
+        bpa_date = CUSTOM_DATE
     else:
-        print(f"BPA report for Aragon & Navarra zones are not available yet for selected date '{today}'.")
+        bpa_date = get_bpa_publication_date(bpa_file=pdf_bpa)
+    
+    # Get danger levels for BPA date
+    print(f"BPA report date: {bpa_date}")
+    danger_lvls = get_danger_levels_from_bpa(
+        bpa_file=pdf_bpa,
+        date=bpa_date
+    )
+
+    # Insert data to DB
+    for zone in danger_lvls:
+        ates_utils.save_data(
+            zone_name=zone["zone_name"],
+            zone_id=zone["zone_id"],
+            date=bpa_date,
+            level=zone["level"]
+        )
 
     # End
     print("Total time elapsed: {:.2f} seconds.".format(time.time() - start_time))

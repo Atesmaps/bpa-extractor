@@ -171,34 +171,35 @@ def main() -> None:
     print("** ATESMaps Avalanche Report Extractor **")
 
     # Today date in format YYYY-MM-DD
-    if CUSTOM_DATE:
-        today = CUSTOM_DATE
-    else:
-        today = datetime.today().strftime("%Y-%m-%d")
+    today = datetime.today().strftime("%Y-%m-%d")
 
     print(f"Updating avalanche danger level...")
     print(f"Zone: Andorra Pyrenees")
-    print(f"Date: {today}")
+    print(f"Current date: {today}")
 
     # Get danger level
     pdf_bpa = f"/tmp/andorra_bpa_{today}.pdf"
     report_url = get_download_link()
     get_report(download_link=report_url, output_file=pdf_bpa)
-    
-    # Only compute danger level if selected date is equals than BPA report date.
-    if today == get_bpa_publication_date(bpa_file=pdf_bpa):
-        danger_lvls = get_bpa_danger_levels(date=today)
 
-        # Insert data to DB
-        for zone in danger_lvls:
-            ates_utils.save_data(
-                zone_name=zone["zone_name"],
-                zone_id=zone["zone_id"],
-                date=today,
-                level=zone["level"]
-            )
+    # BPA date in format YYYY-MM-DD
+    if CUSTOM_DATE:
+        bpa_date = CUSTOM_DATE
     else:
-        print(f"BPA report for Andorra zones are not available yet for selected date '{today}'.")
+        bpa_date = get_bpa_publication_date(bpa_file=pdf_bpa)
+
+    # Get danger levels for BPA date
+    print(f"BPA report date: {bpa_date}")
+    danger_lvls = get_bpa_danger_levels(date=bpa_date)
+
+    # Insert data to DB
+    for zone in danger_lvls:
+        ates_utils.save_data(
+            zone_name=zone["zone_name"],
+            zone_id=zone["zone_id"],
+            date=bpa_date,
+            level=zone["level"]
+        )
 
     # End
     print("Total time elapsed: {:.2f} seconds.".format(time.time() - start_time))

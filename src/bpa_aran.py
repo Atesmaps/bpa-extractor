@@ -15,7 +15,7 @@
 #   November 2021
 #
 ############################################################
-from datetime import datetime
+from datetime import datetime, timedelta
 from os import getenv
 import sys
 import time
@@ -56,6 +56,23 @@ def get_report(date: str):
         raise Exception("Couldn't get Aran BPA.") from exc
 
 
+def get_bpa_publication_date(bpa) -> str:
+    '''
+    Return BPA date from report.
+
+    :param bpa: BeatifulSoup parsed HTML.
+    '''
+
+    try:
+        print("Obtainig BPA report date...")
+        bpa_date_container = bpa.body.find_all("div", attrs={"class": "bTitle"})[0].text
+        bpa_date = datetime.strptime(bpa_date_container.split("  ")[1], "%d.%m.%Y").strftime("%Y-%m-%d")
+
+        return bpa_date
+    except Exception as exc:
+        raise Exception("Couldn't get avalanche report date from Aran BPA.") from exc
+
+
 def danger_level_from_bpa(bpa) -> int:
     '''
     Return avalanche danger level from BPA report.
@@ -86,33 +103,34 @@ def main() -> None:
     print("** ATESMaps Avalanche Report Extractor **")
 
     # Today date in format YYYY-MM-DD
-    if CUSTOM_DATE:
-        today = CUSTOM_DATE
-    else:
-        today = datetime.today().strftime("%Y-%m-%d")
+    today = datetime.today().strftime("%Y-%m-%d")
 
     print(f"Updating avalanche danger level...")
     print(f"Zone: {ZONE_NAME}")
-    print(f"Date: {today}")
+    print(f"Current date: {today}")
 
     # Load zone ID for Aran
     zone_id = ates_utils.refresh_zone_ids()[ZONE_NAME]
 
-    # Check if BPA for selected date already exists.
-    if ates_utils.bpa_exists(date=today, zone_id=zone_id):
-        print(f"Avalanche danger level already exists for the date '{today}' and zone '{ZONE_NAME}'")
+    # Get BPA date from report
+    report = get_report(date=today)
+    bpa_date = get_bpa_publication_date(bpa=report)
+
+    # Check if BPA danger levels for BPA report date already exists.
+    print(f"BPA report date: {bpa_date}")
+    if ates_utils.bpa_exists(date=bpa_date, zone_id=zone_id):
+        print(f"Avalanche danger level already exists for the date '{bpa_date}' and zone '{ZONE_NAME}'")
         print("Bye.")
         sys.exit()
 
     # Get danger level
-    report = get_report(date=today)
     danger_lvl = danger_level_from_bpa(bpa=report)
 
     # Insert data to DB
     ates_utils.save_data(
         zone_name=ZONE_NAME,
         zone_id=zone_id,
-        date=today,
+        date=bpa_date,
         level=danger_lvl
     )
 

@@ -160,7 +160,7 @@ def danger_levels_from_bpa(bpa_file: str, date: str) -> list:
 
         return levels_from_bpa
     except Exception as exc:
-        raise Exception("Couldn't get avalanche danger level from Aran BPA.") from exc
+        raise Exception("Couldn't get avalanche danger level from ICGC BPA.") from exc
 
 
 def main() -> None:
