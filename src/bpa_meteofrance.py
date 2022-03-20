@@ -16,7 +16,6 @@
 #
 ###############################################################################
 from typing import Optional
-from os import getenv
 import sys
 import time
 import re
@@ -31,11 +30,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.firefox.options import Options
 
 ############ CONFIGURATION ################
-# Set custom date with format YYYY-MM-DD using
-# environment variable "CUSTOM_DATE". If it's not
-# set default date will be used.
-# Default: Today
-CUSTOM_DATE = getenv("CUSTOM_DATE")
 
 # METEOFRANCE - Zone matrix positions
 METEOFRANCE_ZONE_POS = {
@@ -84,24 +78,6 @@ def accept_cookies_policy(driver):
         print('Acceptance of the cookie policy is not required or has already been accepted previously.')
 
 
-def get_bpa_report_date(driver):
-    '''
-    Return BPA report date in format YYYY-MM-DD
-
-    :param driver: Selenium Webdriver.
-    '''
-
-    try:
-        bpaUpdateElement = driver.find_element(By.XPATH, '//groupe[@nom="mises à jour"]').find_element(By.TAG_NAME, "date")
-        # Search all 'dd/mm/yyyy' strings from text using regular expression
-        bpa_dates = re.findall(r'\d{2}/\d{2}/\d{4}', bpaUpdateElement.get_attribute("textContent"))
-        # Return the earliest date from list and date formatting
-        bpa_date = datetime.strptime(min(bpa_dates), "%d/%m/%Y").strftime("%Y-%m-%d")
-        return bpa_date
-    except Exception as exc:
-        raise Exception("Couldn't get BPA report date from Meteofrance.") from exc
-
-
 def get_danger_level_by_zone(driver, date: str):
     '''
     Return dangel level for each zone and date selected.
@@ -110,15 +86,9 @@ def get_danger_level_by_zone(driver, date: str):
     :param date: BPA report date in format YYYY-MM-DD.
     '''
 
-    # Check BPA report date
-    report_date = get_bpa_report_date(driver=driver)
-    if report_date != date:
-        print(f"Selected date '{date}' and retured BPA report date '{report_date}' from meteofrance not met.")
-        print("Skipping...")
-        sys.exit()
-
     # Danger levels
     danger_levels = []
+
     # Find the avalanche risk icons within the map
     avalancheIconElements = driver.find_elements(By.CLASS_NAME, "iconMap")
     for area in avalancheIconElements:
@@ -139,17 +109,12 @@ def get_danger_level_by_zone(driver, date: str):
         # Get Zone ID from name
         zone_id = ates_utils.refresh_zone_ids()[zone_name]
 
-        # Check if BPA for selected date already exists.
-        if ates_utils.bpa_exists(date=date, zone_id=zone_id):
-            print(f"Avalanche danger level already exists for the date '{date}' and zone {zone_name}")
-            continue
-
         print(f"Danger level for '{zone_name}' zone: {danger_level}")
         danger_levels.append({
             "zone_name": zone_name,
             "zone_id": zone_id,
             "danger_level": danger_level,
-            "bpa_date": report_date
+            "bpa_date": date
         })
 
     return danger_levels
@@ -166,10 +131,7 @@ def main():
     print("** ATESMaps Avalanche Report Extractor **")
 
     # Today date in format YYYY-MM-DD
-    if CUSTOM_DATE:
-        today = CUSTOM_DATE
-    else:
-        today = datetime.today().strftime("%Y-%m-%d")
+    today = datetime.today().strftime("%Y-%m-%d")
 
     print(f"Updating avalanche danger level...")
     print(f"Zone: MeteoFrance - Pyrenees Français")

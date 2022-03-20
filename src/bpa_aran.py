@@ -16,7 +16,6 @@
 #
 ############################################################
 from datetime import datetime, timedelta
-from os import getenv
 import sys
 import time
 import requests
@@ -26,11 +25,6 @@ import atesmaps_utilities as ates_utils
 
 
 ############ CONFIGURATION ################
-# Set custom date with format YYYY-MM-DD using
-# environment variable "CUSTOM_DATE". If it's not
-# set default date will be used.
-# Default: Today
-CUSTOM_DATE = getenv("CUSTOM_DATE")
 ZONE_NAME = "Aran"
 
 
@@ -59,7 +53,9 @@ def get_report(date: str):
             response = requests.get(
                 url=bpa_urls.BPA_ARAN_URL.format(date=date)
             )
-            sys.exit(1)
+            if response.status_code != 200:
+                print(f"Avalanche report for zone Aran using date {date} is not available yet.")
+                sys.exit(1)
         return BeautifulSoup(response.text, 'html.parser')
     except Exception as exc:
         raise Exception("Couldn't get Aran BPA.") from exc
@@ -127,10 +123,6 @@ def main() -> None:
 
     # Check if BPA danger levels for BPA report date already exists.
     print(f"BPA report date: {bpa_date}")
-    if ates_utils.bpa_exists(date=bpa_date, zone_id=zone_id):
-        print(f"Avalanche danger level already exists for the date '{bpa_date}' and zone '{ZONE_NAME}'")
-        print("Bye.")
-        sys.exit()
 
     # Get danger level
     danger_lvl = danger_level_from_bpa(bpa=report)

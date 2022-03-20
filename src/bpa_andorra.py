@@ -17,9 +17,7 @@
 #
 ############################################################
 from datetime import datetime
-from os import getenv
 import re
-import fitz
 import sys
 import time
 import requests
@@ -29,11 +27,6 @@ import atesmaps_utilities as ates_utils
 
 
 ############ CONFIGURATION ################
-# Set custom date with format YYYY-MM-DD using
-# environment variable "CUSTOM_DATE". If it's not
-# set default date will be used.
-# Default: Today
-CUSTOM_DATE = getenv("CUSTOM_DATE")
 ANDORRA_ZONES = {
     "iconos1": "Andorra nord",
     "iconos2": "Andorra centre",
@@ -55,7 +48,7 @@ def get_bpa_html():
     if response.status_code != 200:
         print(f"Andorra avalanche reporting web is not available.")
         sys.exit(1)
-    
+
     return BeautifulSoup(response.text, 'html.parser')
 
 
@@ -96,12 +89,10 @@ def get_report(download_link: str, output_file: str) -> None:
         raise Exception("Couldn't get Andorra BPA.") from exc
 
 
-def get_bpa_danger_levels(date: str) -> list:
+def get_bpa_danger_levels() -> list:
     '''
     Return BPA danger levels for each Andorra zone defined
     in ANDORRA_ZONES variable.
-
-    :param date: The selected date that you want to check danger level.
     '''
 
     try:
@@ -110,11 +101,8 @@ def get_bpa_danger_levels(date: str) -> list:
 
         bpa_html = get_bpa_html()
         for zone in ANDORRA_ZONES:
-            # Check if BPA for selected date already exists.
+            # Get zone ID from zone name
             zone_id = ates_utils.refresh_zone_ids()[ANDORRA_ZONES[zone]]
-            if ates_utils.bpa_exists(date=date, zone_id=zone_id):
-                print(f"Avalanche danger level already exists for the date '{date}' and zone '{ANDORRA_ZONES[zone]}'")
-                continue
 
             img = bpa_html.body.find("div", attrs={"class": f"{zone}"})
             danger_ok = False
@@ -141,28 +129,6 @@ def get_bpa_danger_levels(date: str) -> list:
         raise Exception(f"Couldn't get danger levels from BPA report. ERROR: {exc}")
 
 
-def get_bpa_publication_date(bpa_file: str) -> str:
-    '''
-    Return BPA report publication date.
-
-    :param bpa_file: Full path to PDF file.
-    '''
-
-    print("Obtaining report date from BPA report...")
-    with fitz.open(bpa_file) as f:
-        for page in f:
-            p_text = page.get_text()
-            if "Elaborat el" in p_text:
-                bpa_dates = re.findall(r'\d{2}/\d{2}/\d{4}', p_text)
-                break
-
-    if bpa_dates:
-        # Return earliest date
-        return datetime.strptime(min(bpa_dates), "%d/%m/%Y").strftime("%Y-%m-%d")
-    else:
-        raise Exception("Couldn't determine BPA report date.")
-
-
 def main() -> None:
     '''Extract BPA data from Lauegi archive.'''
 
@@ -182,22 +148,15 @@ def main() -> None:
     report_url = get_download_link()
     get_report(download_link=report_url, output_file=pdf_bpa)
 
-    # BPA date in format YYYY-MM-DD
-    if CUSTOM_DATE:
-        bpa_date = CUSTOM_DATE
-    else:
-        bpa_date = get_bpa_publication_date(bpa_file=pdf_bpa)
-
-    # Get danger levels for BPA date
-    print(f"BPA report date: {bpa_date}")
-    danger_lvls = get_bpa_danger_levels(date=bpa_date)
+    # Get danger levels from BPA
+    danger_lvls = get_bpa_danger_levels()
 
     # Insert data to DB
     for zone in danger_lvls:
         ates_utils.save_data(
             zone_name=zone["zone_name"],
             zone_id=zone["zone_id"],
-            date=bpa_date,
+            date=today,
             level=zone["level"]
         )
 

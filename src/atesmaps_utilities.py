@@ -29,11 +29,11 @@ def refresh_zone_ids() -> dict:
     zone_ids = {}
     for rec in response:
         zone_ids[rec[0]] = rec[1]
-    
+
     return zone_ids
 
 
-def bpa_exists(date: str, zone_id: str) -> bool:
+def bpa_exists(date: str, zone_id: str, danger_level: int) -> bool:
     '''
     Check if BPA exists for selected date and zone.
 
@@ -41,6 +41,7 @@ def bpa_exists(date: str, zone_id: str) -> bool:
                  a available BPA. Format: YYYY-MM-DD
     :param zone_id: The code corresponding with the zone that
                     you want to validate.
+    :param danger_level: Avalanche danger level as string. Ex: 2
     '''
 
     q = f"""SELECT
@@ -49,7 +50,8 @@ def bpa_exists(date: str, zone_id: str) -> bool:
                 {const.TABLE_BPA_HISTORY}
             WHERE
                 bpa_date = '{date}'
-                and zone_id = '{zone_id}'"""
+                and zone_id = '{zone_id}'
+                and danger_level = '{danger_level}'"""
 
     response = db.select_data(query=q)
     if response:
@@ -67,6 +69,13 @@ def save_data(zone_name: str, zone_id: str, date: str, level: str) -> None:
     :param date: The BPA report date in format YYYY-MM-DD.
     :param level: Avalanche danger level as string. Ex: 2
     '''
+
+    print(f"Adding danger level '{level}' for zone '{zone_name}' using date '{date}' to database...")
+
+    # Check if BPA data is already saved in the database
+    if bpa_exists(date=date, zone_id=zone_id, danger_level=level):
+        print(f"The BPA data is already in the database. Nothing to do.")
+        return
 
     # Insert dangel level to BPA table
     print(f"Updating data to zones information table for zone '{zone_name}'...")
