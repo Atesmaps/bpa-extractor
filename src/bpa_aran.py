@@ -44,12 +44,21 @@ def get_report(date: str):
 
     try:
         print(f"Downloading Aran BPA report...")
+
+        # Check if BPA report for tomorrow are available
+        selected_date = datetime.strptime(date, "%Y-%m-%d")
+        tomorrow = (selected_date + timedelta(days=1)).strftime("%Y-%m-%d")
+        print(f"Checking if BPA report are available for tomorrow '{tomorrow}'...")
         response = requests.get(
-            url=bpa_urls.BPA_ARAN_URL.format(date=date)
+            url=bpa_urls.BPA_ARAN_URL.format(date=tomorrow)
         )
         # Parsing html content with beautifulsoup
         if response.status_code != 200:
-            print(f"Avalanche report for zone Aran using date {date} is not available yet.")
+            print(f"Avalanche report for zone Aran using date {tomorrow} is not available yet.")
+            print(f"Checking BPA report for current date '{date}'...")
+            response = requests.get(
+                url=bpa_urls.BPA_ARAN_URL.format(date=date)
+            )
             sys.exit(1)
         return BeautifulSoup(response.text, 'html.parser')
     except Exception as exc:
