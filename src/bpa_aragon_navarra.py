@@ -15,50 +15,43 @@
 #   November 2021
 #
 ######################################################################################
-from datetime import datetime
 import sys
 import time
-import requests
+from datetime import datetime
+
 import fitz
+import requests
 
-import bpa_urls
 import atesmaps_utilities as ates_utils
+import bpa_urls
 
+# ----- CONFIGURATION ----- #
+ARAGON_NAV_ZONES = ["Navarra", "Jacetania", "Gállego", "Sobrarbe", "Ribagorza"]
 
-############ CONFIGURATION ################
-ARAGON_NAV_ZONES = [
-    "Navarra",
-    "Jacetania",
-    "Gállego",
-    "Sobrarbe",
-    "Ribagorza"
-]
-
-##### Avalanche Levels #####
+# ----- Avalanche Levels ----- #
 AVALANCHE_LEVELS = {
     "Débil": 1,
     "Limitado": 2,
     "Notable": 3,
     "Fuerte": 4,
-    "Muy Fuerte": 5
+    "Muy Fuerte": 5,
 }
 
 
 def get_report(output_file: str) -> None:
-    '''
+    """
     Do an API call and return BPA data in PDF format.
 
     :param output_file: String with the full path for the new PDF file.
-    :param download link: URL for download PDF.
-    '''
+    """
 
     try:
-        print(f"Downloading Aragon-Navarra BPA report from: {bpa_urls.BPA_ARAGON_NAV_URL}...")
-        response = requests.get(
-            url=bpa_urls.BPA_ARAGON_NAV_URL
+        print(
+            f"Downloading Aragon-Navarra BPA report from: {bpa_urls.BPA_ARAGON_NAV_URL}..."
         )
+        response = requests.get(url=bpa_urls.BPA_ARAGON_NAV_URL)
         if response.status_code != 200:
-            print(f"Avalanche report for Aragon & Navarra zones is not available.")
+            print("Avalanche report for Aragon & Navarra zones is not available.")
             sys.exit(1)
         # Download report as PDF
         with open(output_file, "wb") as f:
@@ -69,11 +62,11 @@ def get_report(output_file: str) -> None:
 
 
 def get_danger_levels_from_bpa(bpa_file: str) -> int:
-    '''
+    """
     Return avalanche danger levels from BPA.
 
     :param bpa_file: Full path to PDF file with BPA.
-    '''
+    """
 
     print("Obtaining danger levels from BPA report...")
     levels_from_bpa = []
@@ -87,17 +80,19 @@ def get_danger_levels_from_bpa(bpa_file: str) -> int:
 
                     danger_lvl = AVALANCHE_LEVELS[p_text[index + 1]]
                     print(f"Danger level for '{line_text}' zone: {danger_lvl}")
-                    levels_from_bpa.append({
-                        "zone_id": zone_id,
-                        "zone_name": line_text,
-                        "level": danger_lvl
-                    })
+                    levels_from_bpa.append(
+                        {
+                            "zone_id": zone_id,
+                            "zone_name": line_text,
+                            "level": danger_lvl,
+                        }
+                    )
 
     return levels_from_bpa
 
 
 def main() -> None:
-    '''Extract BPA data from AEMET website.'''
+    """Extract BPA data from AEMET website."""
 
     # Init
     start_time = time.time()
@@ -106,8 +101,8 @@ def main() -> None:
     # Today date in format YYYY-MM-DD
     today = datetime.today().strftime("%Y-%m-%d")
 
-    print(f"Updating avalanche danger level...")
-    print(f"Zone: Aragon & Navarra Pyrenees")
+    print("Updating avalanche danger level...")
+    print("Zone: Aragon & Navarra Pyrenees")
     print(f"Current date: {today}")
 
     # Get danger level
@@ -115,9 +110,7 @@ def main() -> None:
     get_report(output_file=pdf_bpa)
 
     # Get danger levels from BPA
-    danger_lvls = get_danger_levels_from_bpa(
-        bpa_file=pdf_bpa
-    )
+    danger_lvls = get_danger_levels_from_bpa(bpa_file=pdf_bpa)
 
     # Insert data to DB
     for zone in danger_lvls:
@@ -125,7 +118,7 @@ def main() -> None:
             zone_name=zone["zone_name"],
             zone_id=zone["zone_id"],
             date=today,
-            level=zone["level"]
+            level=zone["level"],
         )
 
     # End

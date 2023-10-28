@@ -10,7 +10,7 @@
 #    * CUSTOM_DATE: Select a specific date for BPA report
 #                   extractors. Default Today.
 #                   Format: YYYY-MM-DD
-#    * CUSTOM_ZONE: Selec a specific zone that you want to
+#    * CUSTOM_ZONE: Select a specific zone that you want to
 #                   extract BPA report and update data.
 #                   If it's not set, all zones will be updated.
 #                   Zones: andorra,aran,icgc,meteofrance.
@@ -33,10 +33,10 @@ printf "\nRunning ATESMaps BPA extractors...\n"
 if [[ -z "${CUSTOM_ZONE}" ]];
 	then
         for zone in ${AVAILABLE_ZONES}; do
-            printf "\nRunning BPA extractor for zone '${zone}'...\n"
+            printf "\nRunning BPA extractor for zone '%s'...\n" "${zone}"
             python3 -u /src/bpa_${zone}.py
         done
 	else
-  		printf "\nRunning BPA extractor for zone '${CUSTOM_ZONE}'...\n"
+  		printf "\nRunning BPA extractor for zone '%s'...\n" "${CUSTOM_ZONE}"
   		python3 -u /src/bpa_${CUSTOM_ZONE}.py
 fi
