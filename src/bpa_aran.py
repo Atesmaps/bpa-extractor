@@ -15,63 +15,66 @@
 #   November 2021
 #
 ############################################################
-from datetime import datetime, timedelta
 import sys
 import time
+from datetime import datetime, timedelta
+
 import requests
 from bs4 import BeautifulSoup
-import bpa_urls
+
 import atesmaps_utilities as ates_utils
+import bpa_urls
 
-
-############ CONFIGURATION ################
+# ----- CONFIGURATION ----- #
 ZONE_NAME = "Aran"
 
 
 def get_report(date: str):
-    '''
-    Do an API call and return BPA data in BeatifulSoup object.
+    """
+    Do an API call and return BPA data in BeautifulSoup object.
 
-    :param date: Select especific date for BPA. Default today.
-                 Format: YYYY-MM-DD   
-    '''
+    :param date: Select specific date for BPA. Default today.
+                 Format: YYYY-MM-DD
+    """
 
     try:
-        print(f"Downloading Aran BPA report...")
+        print("Downloading Aran BPA report...")
 
         # Check if BPA report for tomorrow are available
         selected_date = datetime.strptime(date, "%Y-%m-%d")
         tomorrow = (selected_date + timedelta(days=1)).strftime("%Y-%m-%d")
         print(f"Checking if BPA report are available for tomorrow '{tomorrow}'...")
-        response = requests.get(
-            url=bpa_urls.BPA_ARAN_URL.format(date=tomorrow)
-        )
+        response = requests.get(url=bpa_urls.BPA_ARAN_URL.format(date=tomorrow))
         # Parsing html content with beautifulsoup
         if response.status_code != 200:
-            print(f"Avalanche report for zone Aran using date {tomorrow} is not available yet.")
-            print(f"Checking BPA report for current date '{date}'...")
-            response = requests.get(
-                url=bpa_urls.BPA_ARAN_URL.format(date=date)
+            print(
+                f"Avalanche report for zone Aran using date {tomorrow} is not available yet."
             )
+            print(f"Checking BPA report for current date '{date}'...")
+            response = requests.get(url=bpa_urls.BPA_ARAN_URL.format(date=date))
             if response.status_code != 200:
-                print(f"Avalanche report for zone Aran using date {date} is not available yet.")
+                print(
+                    f"Avalanche report for zone Aran using date {date} is not available yet."
+                )
                 sys.exit(1)
-        return BeautifulSoup(response.text, 'html.parser')
+        return BeautifulSoup(response.text, "html.parser")
     except Exception as exc:
         raise Exception("Couldn't get Aran BPA.") from exc
 
 
 def get_bpa_publication_date(bpa) -> str:
-    '''
+    """
     Return BPA date from report.
 
-    :param bpa: BeatifulSoup parsed HTML.
-    '''
+    :param bpa: BeautifulSoup parsed HTML.
+    """
 
     try:
-        print("Obtainig BPA report date...")
+        print("Obtaining BPA report date...")
         bpa_date_container = bpa.body.find_all("div", attrs={"class": "bTitle"})[0].text
-        bpa_date = datetime.strptime(bpa_date_container.split("  ")[1], "%d.%m.%Y").strftime("%Y-%m-%d")
+        bpa_date = datetime.strptime(
+            bpa_date_container.split("  ")[1], "%d.%m.%Y"
+        ).strftime("%Y-%m-%d")
 
         return bpa_date
     except Exception as exc:
@@ -79,18 +82,20 @@ def get_bpa_publication_date(bpa) -> str:
 
 
 def danger_level_from_bpa(bpa) -> int:
-    '''
+    """
     Return avalanche danger level from BPA report.
 
-    :param bpa: BeatifulSoup parsed HTML.
-    '''
+    :param bpa: BeautifulSoup parsed HTML.
+    """
 
     try:
         print("Processing danger level from report...")
         danger_level = []
         for div in bpa.body.find_all("div", attrs={"class": "dangerImg"}):
             if "conselharan2" in div.img["src"] or "warning_pictos" in div.img["src"]:
-                danger_level = div.img["src"].split("/")[-1].split(".")[0].split("_")[1:]
+                danger_level = (
+                    div.img["src"].split("/")[-1].split(".")[0].split("_")[1:]
+                )
                 break
 
         danger_levels = [int(x) for x in danger_level]
@@ -101,7 +106,7 @@ def danger_level_from_bpa(bpa) -> int:
 
 
 def main() -> None:
-    '''Extract BPA data from Lauegi website.'''
+    """Extract BPA data from Lauegi website."""
 
     # Init
     start_time = time.time()
@@ -110,8 +115,8 @@ def main() -> None:
     # Today date in format YYYY-MM-DD
     today = datetime.today().strftime("%Y-%m-%d")
 
-    print(f"Updating avalanche danger level...")
-    print(f"Zone: {ZONE_NAME}")
+    print("Updating avalanche danger level...")
+    print("Zone: {ZONE_NAME}")
     print(f"Current date: {today}")
 
     # Load zone ID for Aran
@@ -129,10 +134,7 @@ def main() -> None:
 
     # Insert data to DB
     ates_utils.save_data(
-        zone_name=ZONE_NAME,
-        zone_id=zone_id,
-        date=bpa_date,
-        level=danger_lvl
+        zone_name=ZONE_NAME, zone_id=zone_id, date=bpa_date, level=danger_lvl
     )
 
     # End

@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 ############################################################
 #
-#   ATESMaps - BPA Extractors - ICGC (Institut Cartogràfic 
+#   ATESMaps - BPA Extractors - ICGC (Institut Cartogràfic
 #   i Geològic de Catalunya)
 #
 #   Python script that obtains data of avalanche bulletin
@@ -16,20 +16,20 @@
 #   November 2021
 #
 ############################################################
-from datetime import datetime
-from os import getenv
 import sys
 import time
+from datetime import datetime
 from typing import Iterable, List
+
 import requests
 from PyPDF2 import PdfFileReader
-import bpa_urls
+
 import atesmaps_utilities as ates_utils
+import bpa_urls
 
+# ----- CONFIGURATION ----- #
 
-############ CONFIGURATION ################
-
-##### Zones managed by ICGC #####
+# ----- Zones managed by ICGC ----- #
 ICGC_ZONES = [
     "Aran - Franja Nord Pallaresa",
     "Ribagorçana - Vall Fosca",
@@ -37,35 +37,31 @@ ICGC_ZONES = [
     "Perafita - Puigpedrós",
     "Vessant Nord Cadí - Moixeró",
     "Prepirineu",
-    "Ter - Freser"
+    "Ter - Freser",
 ]
 
-##### Avalanche Levels #####
-AVALANCHE_LEVELS = {
-    "FEBLE": 1,
-    "MODERAT": 2,
-    "MARCAT": 3,
-    "FORT": 4,
-    "MOLT FORT": 5
-}
+# ----- Avalanche Levels ----- #
+AVALANCHE_LEVELS = {"FEBLE": 1, "MODERAT": 2, "MARCAT": 3, "FORT": 4, "MOLT FORT": 5}
 
 
-def get_report(output_file: str, date: str=datetime.today().strftime("%Y-%m-%d")) -> None:
-    '''
+def get_report(
+    output_file: str, date: str = datetime.today().strftime("%Y-%m-%d")
+) -> None:
+    """
     Do an API call and return BPA data in PDF.
 
     :param output_file: String with the full path for the new PDF file.
     :param date: Select especific date for BPA. Default today.
                  Format: YYYY-MM-DD
-    '''
+    """
 
     try:
-        print(f"Downloading ICGC BPA report...")
-        response = requests.get(
-            url=bpa_urls.BPA_ICGC_URL.format(date=date)
-        )
+        print("Downloading ICGC BPA report...")
+        response = requests.get(url=bpa_urls.BPA_ICGC_URL.format(date=date))
         if response.status_code != 200:
-            print(f"Avalanche report for zone ICGC using date {date} is not available yet.")
+            print(
+                f"Avalanche report for zone ICGC using date {date} is not available yet."
+            )
             sys.exit(1)
         # Download report as PDF
         with open(output_file, "wb") as f:
@@ -76,21 +72,21 @@ def get_report(output_file: str, date: str=datetime.today().strftime("%Y-%m-%d")
 
 
 def remove_duplicates(dup_list: Iterable) -> List:
-    '''
+    """
     Remove list duplicates.
 
     :param dup_list: Python list that you want to remove duplicates.
-    '''
+    """
 
     return list(set(dup_list))
 
 
 def levels_to_numeric(danger_levels: Iterable) -> List:
-    '''
+    """
     Extract avalanche danger level from string and return numeric value.
 
     :param danger_levels: List with avalanche levals as string.
-    '''
+    """
 
     num_levels = []
     for bpa_level in danger_levels:
@@ -101,25 +97,31 @@ def levels_to_numeric(danger_levels: Iterable) -> List:
 
 
 def danger_levels_from_bpa(bpa_file: str) -> list:
-    '''
+    """
     Return avalanche danger level from BPA report for each zone.
 
     :param bpa_file: PDF file path with BPA report.
-    '''
+    """
 
     try:
         levels_from_bpa = []
 
         # Parse BPA in PDF format.
-        with open(bpa_file, 'rb') as f:
+        with open(bpa_file, "rb") as f:
             reader = PdfFileReader(f)
             for page in range(1, reader.getNumPages()):
-                contents = reader.getPage(page).extractText().split('\n')
+                contents = reader.getPage(page).extractText().split("\n")
                 danger_levels = []
                 zone = []
                 for elem in contents:
-                    zone += [zone for zone in ICGC_ZONES if zone.replace(" ","") == elem.replace(" ","")]
-                    danger_levels += [level for level in AVALANCHE_LEVELS if level in elem]
+                    zone += [
+                        zone
+                        for zone in ICGC_ZONES
+                        if zone.replace(" ", "") == elem.replace(" ", "")
+                    ]
+                    danger_levels += [
+                        level for level in AVALANCHE_LEVELS if level in elem
+                    ]
 
                 # Check values
                 if zone and danger_levels:
@@ -138,15 +140,21 @@ def danger_levels_from_bpa(bpa_file: str) -> list:
 
                     # Save values
                     print(f"Danger level for '{zone[0]}' zone: {danger_level}")
-                    levels_from_bpa.append({
-                        "zone_id": zone_id,
-                        "zone_name": zone[0],
-                        "level": danger_level
-                    })
+                    levels_from_bpa.append(
+                        {
+                            "zone_id": zone_id,
+                            "zone_name": zone[0],
+                            "level": danger_level,
+                        }
+                    )
                 elif zone and not danger_levels:
-                    print(f"WARNING: Couldn't get avalanche danger level for '{zone}' zone.")
+                    print(
+                        f"WARNING: Couldn't get avalanche danger level for '{zone}' zone."
+                    )
                 else:
-                    print(f"Couldn't extract data from page '{page}' using '{bpa_file}' report.")
+                    print(
+                        f"Couldn't extract data from page '{page}' using '{bpa_file}' report."
+                    )
 
         return levels_from_bpa
     except Exception as exc:
@@ -154,7 +162,7 @@ def danger_levels_from_bpa(bpa_file: str) -> list:
 
 
 def main() -> None:
-    '''Extract BPA data from ICGC web portal.'''
+    """Extract BPA data from ICGC web portal."""
 
     # Init
     start_time = time.time()
@@ -163,8 +171,8 @@ def main() -> None:
     # Today date in format YYYY-MM-DD
     today = datetime.today().strftime("%Y-%m-%d")
 
-    print(f"Updating avalanche danger level...")
-    print(f"Zone: ICGC - Catalunya Pyrenees")
+    print("Updating avalanche danger level...")
+    print("Zone: ICGC - Catalunya Pyrenees")
     print(f"Date: {today}")
 
     # Get danger level
@@ -178,7 +186,7 @@ def main() -> None:
             zone_name=zone["zone_name"],
             zone_id=zone["zone_id"],
             date=today,
-            level=zone["level"]
+            level=zone["level"],
         )
 
     # End

@@ -1,6 +1,8 @@
-# ATESMaps BPA Extractor
+# Atesmaps BPA Extractor
 
-Tool for extract avalanche danger levels from Pyrenees zones. Available zones:
+Tool for extract avalanche danger levels from Pyrenees zones.
+
+Available zones:
 - **Andorra** - [Andorra National Weather Service](http://www.meteo.ad/estatneu)
 - **Aragón & Navarra** - [AEMET](https://www.aemet.es/es/eltiempo/prediccion/montana/boletin_peligro_aludes)
 - **Aran** - [Lauegi](https://lauegi.report/)
@@ -49,22 +51,35 @@ Deploy BPA extractor service requires [Docker engine](https://docs.docker.com/en
 Follow this steps:
 
 1. Create **Log directory** to be able to review the executions.
-> mkdir /var/log/atesmaps-bpa-extractor
+```bash
+mkdir /var/log/atesmaps-bpa-extractor
+```
 
 2. Create **Log rotate** configuration file copying the file from repository `resources/deploy/logrotate/atesmaps-bpa-extractor`.
-> cp resources/deploy/logrotate/atesmaps-bpa-extractor /etc/logrotate.d/atesmaps-bpa-extractor
+```bash
+cp resources/deploy/logrotate/atesmaps-bpa-extractor /etc/logrotate.d/atesmaps-bpa-extractor
+```
 
 3. Create **trigger** script in `/opt/atesmaps/scripts` copying the file from repository `resources/deploy/run_bpa_extractor.sh`:
-> cp resources/deploy/run_bpa_extractor.sh /opt/atesmaps/scripts/run_bpa_extractor.sh
+```bash
+cp resources/deploy/run_bpa_extractor.sh /opt/atesmaps/scripts/run_bpa_extractor.sh
+```
 
 4. Edit trigger script with your **credentials**. You should replace the following fields:
-> YOUR_DB_HOST; YOUR_DB_NAME; YOUR_DB_USER; YOUR_DB_PASSWORD
+    - YOUR_DB_HOST
+    - YOUR_DB_NAME
+    - YOUR_DB_USER
+    - YOUR_DB_PASSWORD
 
 5. Change trigger script permissions to be able execution:
-> chmod +x /opt/atesmaps/scripts/run_bpa_extractor.sh
+```bash
+chmod +x /opt/atesmaps/scripts/run_bpa_extractor.sh
+```
 
 6. Add the following lines to **crontab** to schedule BPA extractor job.
+```text
 > 0 * * * * /opt/atesmaps/scripts/run_bpa_extractor.sh >/dev/null 2>&1
+```
 
 ### SQL Resources
 
@@ -89,7 +104,7 @@ If you have made changes to the code you will need to generate a new version. Ke
 > docker push atesmaps/atesmaps-bpa-extractor:vX.Y.Z
 
 
-## Collaborators
+## Authors
 
-- Nil Torrano: <ntorrano@atesmaps.org>
-- ATESMaps Team: <info@atesmaps.org>
+- **Nil Torrano**: <ntorrano@atesmaps.org>
+- **Atesmaps Team**: <info@atesmaps.org>
