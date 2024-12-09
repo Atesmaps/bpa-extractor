@@ -22,7 +22,7 @@ from datetime import datetime
 from typing import Iterable, List
 
 import requests
-from PyPDF2 import PdfFileReader
+from PyPDF2 import PdfReader
 
 import atesmaps_utilities as ates_utils
 import bpa_urls
@@ -41,7 +41,13 @@ ICGC_ZONES = [
 ]
 
 # ----- Avalanche Levels ----- #
-AVALANCHE_LEVELS = {"FEBLE": 1, "MODERAT": 2, "MARCAT": 3, "FORT": 4, "MOLT FORT": 5}
+AVALANCHE_LEVELS = {
+    "Feble (1)": 1,
+    "Moderat (2)": 2,
+    "Marcat (3)": 3,
+    "Fort (4)": 4,
+    "Molt fort (5)": 5,
+}
 
 
 def get_report(
@@ -51,7 +57,7 @@ def get_report(
     Do an API call and return BPA data in PDF.
 
     :param output_file: String with the full path for the new PDF file.
-    :param date: Select especific date for BPA. Default today.
+    :param date: Select specific date for BPA. Default today.
                  Format: YYYY-MM-DD
     """
 
@@ -85,7 +91,7 @@ def levels_to_numeric(danger_levels: Iterable) -> List:
     """
     Extract avalanche danger level from string and return numeric value.
 
-    :param danger_levels: List with avalanche levals as string.
+    :param danger_levels: List with avalanche levels as string.
     """
 
     num_levels = []
@@ -108,9 +114,9 @@ def danger_levels_from_bpa(bpa_file: str) -> list:
 
         # Parse BPA in PDF format.
         with open(bpa_file, "rb") as f:
-            reader = PdfFileReader(f)
-            for page in range(1, reader.getNumPages()):
-                contents = reader.getPage(page).extractText().split("\n")
+            reader = PdfReader(f)
+            for page in range(1, len(reader.pages)):
+                contents = reader.pages[page].extract_text().split("\n")
                 danger_levels = []
                 zone = []
                 for elem in contents:

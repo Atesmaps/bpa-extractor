@@ -68,13 +68,22 @@ def get_bpa_publication_date(bpa) -> str:
 
     :param bpa: BeautifulSoup parsed HTML.
     """
+    import locale
 
     try:
+        # Save current locale
+        original_locale = locale.getlocale(locale.LC_TIME)
+
         print("Obtaining BPA report date...")
         bpa_date_container = bpa.body.find_all("div", attrs={"class": "bTitle"})[0].text
-        bpa_date = datetime.strptime(
-            bpa_date_container.split("  ")[1], "%d.%m.%Y"
-        ).strftime("%Y-%m-%d")
+        locale.setlocale(locale.LC_TIME, "ca_ES.UTF-8")  # Aran BPA is in Catalan
+        bpa_date_obj = datetime.strptime(
+            bpa_date_container.split(",")[1].strip(), "%d %B de %Y"
+        )
+        bpa_date = bpa_date_obj.strftime("%Y-%m-%d")
+
+        # Restore locale
+        locale.setlocale(locale.LC_TIME, original_locale)
 
         return bpa_date
     except Exception as exc:
@@ -116,7 +125,7 @@ def main() -> None:
     today = datetime.today().strftime("%Y-%m-%d")
 
     print("Updating avalanche danger level...")
-    print("Zone: {ZONE_NAME}")
+    print(f"Zone: {ZONE_NAME}")
     print(f"Current date: {today}")
 
     # Load zone ID for Aran

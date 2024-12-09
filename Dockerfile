@@ -10,7 +10,7 @@
 #   November 2021
 #
 #################################################################
-FROM python:3
+FROM python:3.13
 LABEL maintainer="ntorrano@atesmaps.org"
 
 WORKDIR /
@@ -20,13 +20,19 @@ RUN apt-get update \
     && apt-get dist-upgrade -y \
     && apt-get install -y \
     wget \
-    firefox-esr
+    firefox-esr \
+    locales
 
 # Install geckodriver (selenium extractors)
-RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.30.0/geckodriver-v0.30.0-linux64.tar.gz 
-RUN tar -xvzf geckodriver-v0.30.0-linux64.tar.gz 
+RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.35.0/geckodriver-v0.35.0-linux64.tar.gz
+RUN tar -xvzf geckodriver-v0.35.0-linux64.tar.gz
 RUN chmod +x geckodriver 
 RUN mv geckodriver /usr/local/bin/
+
+# Install Catalan Locale
+RUN echo "ca_ES.UTF-8 UTF-8" | tee -a /etc/locale.gen
+RUN locale-gen
+RUN locale -a
 
 # Install requirements (Python libraries)
 COPY requirements.txt ./
