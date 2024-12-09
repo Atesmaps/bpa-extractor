@@ -1,6 +1,7 @@
-requests
-psycopg2-binary
-beautifulsoup4
-pypdf2
-selenium
-pymupdf
+babel~=2.16
+beautifulsoup4~=4.12
+psycopg2-binary~=2.9
+pymupdf~=1.25
+pypdf2~=3.0
+requests~=2.32
+selenium~=4.27

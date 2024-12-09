@@ -153,7 +153,7 @@ def main():
 
     # Open the avalanche report URL using Firefox in headless mode
     firefox_options = Options()
-    firefox_options.headless = True
+    firefox_options.add_argument("--headless")
     driver = webdriver.Firefox(options=firefox_options)
     driver.get(bpa_urls.BPA_METEOFRANCE_URL)
 
