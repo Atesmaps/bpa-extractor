@@ -126,7 +126,9 @@ def danger_levels_from_bpa(bpa_file: str) -> list:
                         if zone.replace(" ", "") == elem.replace(" ", "")
                     ]
                     danger_levels += [
-                        level for level in AVALANCHE_LEVELS if level in elem
+                        level
+                        for level in AVALANCHE_LEVELS
+                        if (level in elem or level.upper() in elem)
                     ]
 
                 # Check values
