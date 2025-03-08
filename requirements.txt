@@ -1,5 +1,5 @@
 babel~=2.17
-beautifulsoup4~=4.12
+beautifulsoup4~=4.13
 psycopg2-binary~=2.9
 pymupdf~=1.25
 pypdf2~=3.0
