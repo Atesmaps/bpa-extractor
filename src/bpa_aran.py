@@ -76,9 +76,10 @@ def get_bpa_publication_date(bpa) -> str:
 
         print("Obtaining BPA report date...")
         bpa_date_container = bpa.body.find_all("div", attrs={"class": "bTitle"})[0].text
+        print(bpa_date_container)
         locale.setlocale(locale.LC_TIME, "ca_ES.UTF-8")  # Aran BPA is in Catalan
         bpa_date_obj = datetime.strptime(
-            bpa_date_container.split(",")[1].strip(), "%d %B de %Y"
+            bpa_date_container.encode("latin1").decode("utf-8").split(",")[1].strip(), "%d %B de %Y"
         )
         bpa_date = bpa_date_obj.strftime("%Y-%m-%d")
 
