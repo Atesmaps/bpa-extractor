@@ -10,7 +10,7 @@
 #   November 2021
 #
 #################################################################
-FROM python:3.12
+FROM python:3.13
 LABEL maintainer="ntorrano@atesmaps.org"
 
 WORKDIR /
@@ -24,8 +24,8 @@ RUN apt-get update \
     locales
 
 # Install geckodriver (selenium extractors)
-RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.35.0/geckodriver-v0.35.0-linux64.tar.gz
-RUN tar -xvzf geckodriver-v0.35.0-linux64.tar.gz
+RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.36.0/geckodriver-v0.36.0-linux64.tar.gz
+RUN tar -xvzf geckodriver-v0.36.0-linux64.tar.gz
 RUN chmod +x geckodriver 
 RUN mv geckodriver /usr/local/bin/
 
