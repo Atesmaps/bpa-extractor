@@ -4,4 +4,4 @@ psycopg2-binary~=2.9
 pymupdf~=1.25
 pypdf2~=3.0
 requests~=2.32
-selenium~=4.29
+selenium~=4.38
