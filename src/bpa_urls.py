@@ -35,7 +35,7 @@ BPA_METEOFRANCE_URL = (
 BPA_METEOFRANCE_HISTORY_URL = "https://donneespubliques.meteofrance.fr/?fond=produit&id_produit=265&id_rubrique=50"
 
 # ----- ANDORRA ----- #
-BPA_ANDORRA_URL = "http://www.meteo.ad/estatneu"
+BPA_ANDORRA_URL = "https://www.meteo.ad/estatneu"
 
 # ----- ARAGON ----- #
 BPA_ARAGON_NAV_URL = "http://www.aemet.es/documentos/es/eltiempo/prediccion/montana/boletin_peligro_aludes/BPA_Pirineo_Nav_Ara.pdf"  # noqa: E501
